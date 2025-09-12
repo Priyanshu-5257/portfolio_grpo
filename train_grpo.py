@@ -73,7 +73,7 @@ def train():
         
         # --- M-Loop (Data Collection) ---
         cycle_group_rewards, cycle_timesteps_collected = [], 0
-        
+        cycle_group_max_rewards = []
         for m_step in range(data_collection_cycles_M):
             # Advance base env by one step to get a new 'prompt' state
             action_for_step, _ = agent.select_action(env.base_env._get_state())
@@ -85,6 +85,7 @@ def train():
             
             # Store stats from this collection step for aggregated logging
             cycle_group_rewards.append(group_stats['group_mean_reward'])
+            cycle_group_max_rewards.append(group_stats['group_max_reward'])
             cycle_timesteps_collected += group_stats['timesteps_this_cycle']
         
         time_step += cycle_timesteps_collected
@@ -95,12 +96,13 @@ def train():
         # 3. LOGGING (after each major training update)
         if training_update_cycle % log_freq == 0:
             avg_batch_reward = np.mean(cycle_group_rewards) if cycle_group_rewards else 0
+            max_batch_reward = np.max(cycle_group_max_rewards) if cycle_group_max_rewards else 0
             loss = training_stats.get('policy_loss', 0)
             kl = training_stats.get('kl_divergence', 0)
             entropy = training_stats.get('entropy', 0)
 
-            print(f"Cycle {training_update_cycle} | T: {time_step} | Avg Batch R: {avg_batch_reward:.2f} | KL: {kl:.4f} | Loss: {loss:.6f}")
-            
+            print(f"Cycle {training_update_cycle} | T: {time_step} |Max Batch R: {max_batch_reward:.2f} | Avg Batch R: {avg_batch_reward:.2f} | KL: {kl:.4f} | Loss: {loss:.6f}")
+
             with open(summary_log_path, "a") as f:
                 f.write(f"{training_update_cycle},{time_step},{avg_batch_reward},{loss},{kl},{entropy}\n")
 

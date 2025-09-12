@@ -232,7 +232,7 @@ class PortfolioEnv:
         self.previous_portfolio_value = portfolio_value_today
         reward_breakdown = {'daily_log_return': daily_log_return, 'total': daily_log_return}
         # return daily_log_return, reward_breakdown
-        return 0.1, reward_breakdown
+        return 0.0, reward_breakdown
 
     def _calculate_terminal_reward(self, portfolio_value_final):
         # --- (No changes to this method) ---
