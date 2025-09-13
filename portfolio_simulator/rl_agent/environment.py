@@ -40,6 +40,7 @@ class PortfolioEnv:
         self.previous_portfolio_value = initial_cash
         self.daily_returns = []
         self.reward_log = []
+        self.current_step_transactions = []
 
         # Do not call reset in __init__ to allow for clean cloning
         self.max_days = 60
@@ -72,6 +73,7 @@ class PortfolioEnv:
         self.previous_portfolio_value = self.initial_cash
         self.daily_returns = []
         self.reward_log = []
+        self.current_step_transactions = []
         self.prev_reward = None
         first_date = self.available_dates[self.current_step_index]
         self.current_date = first_date
@@ -120,6 +122,9 @@ class PortfolioEnv:
         # --- (No changes to this method) ---
         if self.done: return self._get_state(), 0, self.done, {}
 
+        # Clear transactions from previous step
+        self.current_step_transactions = []
+        
         self._execute_trades(action_vector)
 
         self.current_step_index += 1
@@ -137,20 +142,27 @@ class PortfolioEnv:
         current_portfolio_value = self.portfolio_manager.portfolio_value['value'].iloc[-1]
         self.peak_portfolio_value = max(self.peak_portfolio_value, current_portfolio_value)
         
+        # Calculate daily return before updating previous_portfolio_value in reward calculation
+        daily_return_ratio = (current_portfolio_value / self.previous_portfolio_value) - 1 if self.previous_portfolio_value > 0 else 0.0
+        
         days_elapsed = len(self.portfolio_manager.portfolio_value) - 1
         if days_elapsed >= self.max_days: self.done = True
         
         reward, reward_breakdown = self._calculate_terminal_reward(current_portfolio_value) if self.done else self._calculate_daily_reward(current_portfolio_value)
         self._log_reward_breakdown(reward_breakdown)
 
-        info = {}
-        if self.done:
-            info = {
-                'final_portfolio_value': current_portfolio_value,
-                'episode_start_date': self.episode_start_date,
-                'current_date': self.current_date,
-                'history': self.portfolio_manager.portfolio_value.copy()
-            }
+        # Create info for every step
+        info = {
+            'final_portfolio_value': current_portfolio_value,
+            'episode_start_date': self.episode_start_date,
+            'current_date': self.current_date,
+            'daily_return_ratio': daily_return_ratio,
+            'cash': self.portfolio_manager.get_cash_balance(),
+            'assets_value': current_portfolio_value - self.portfolio_manager.get_cash_balance(),
+            'transactions': self.current_step_transactions.copy(),
+            'history': self.portfolio_manager.portfolio_value.copy()
+        }
+        
         return self._get_state(), reward, self.done, info
 
     def _execute_trades(self, action_vector):
@@ -170,6 +182,14 @@ class PortfolioEnv:
                 signal = {'symbol': symbol, 'action': 'SELL', 'quantity': quantity_to_sell}
                 if transaction := self.execution_handler.execute_order(signal, self.current_prices):
                     self.portfolio_manager.update_holdings(symbol, -transaction['quantity'], transaction['price'])
+                    # Log the transaction
+                    self.current_step_transactions.append({
+                        'symbol': symbol,
+                        'action': 'SELL',
+                        'quantity': transaction['quantity'],
+                        'price': transaction['price'],
+                        'cost': transaction['cost']
+                    })
 
         total_portfolio_value = self.portfolio_manager.get_total_portfolio_value(self.current_prices)
         cash_for_buying = self.portfolio_manager.get_cash_balance() - (total_portfolio_value * cash_holding_target)
@@ -195,6 +215,14 @@ class PortfolioEnv:
                     if transaction := self.execution_handler.execute_order(signal, self.current_prices):
                         self.portfolio_manager.update_holdings(symbol, transaction['quantity'], transaction['price'])
                         cash_spent_this_step += transaction['cost']
+                        # Log the transaction
+                        self.current_step_transactions.append({
+                            'symbol': symbol,
+                            'action': 'BUY',
+                            'quantity': transaction['quantity'],
+                            'price': transaction['price'],
+                            'cost': transaction['cost']
+                        })
 
     def _get_current_price(self, symbol):
         # --- (No changes to this method) ---
