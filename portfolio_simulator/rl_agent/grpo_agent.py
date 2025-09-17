@@ -16,7 +16,7 @@ class GRPOActorNetwork(nn.Module):
     Actor-only network for GRPO using the same hybrid CNN-MLP architecture.
     Removes the critic head from the original ActorCritic.
     """
-    def __init__(self, state_dim, action_dim, action_std_init, device, n_assets=30, lookback_window=60):
+    def __init__(self, state_dim, action_dim, action_std_init, device, n_assets=13, lookback_window=60):
         super(GRPOActorNetwork, self).__init__()
 
         self.device = device

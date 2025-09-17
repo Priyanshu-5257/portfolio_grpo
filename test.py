@@ -18,11 +18,11 @@ from portfolio_simulator.rl_agent.environment import PortfolioEnv
 from portfolio_simulator.rl_agent.grpo_agent import GRPOAgent
 
 # --- Configuration ---
-MODEL_PATH = "GRPO_models_SS_M4/GRPO_portfolio_1601504.pth" 
-TEST_START_DATE = '2020-01-01'
-TEST_END_DATE = '2025-01-01'
+MODEL_PATH = "GRPO_models_SS_M4/GRPO_portfolio_51552.pth" 
+TEST_START_DATE = '2024-01-01'
+TEST_END_DATE = '2024-08-01'
 ASSETS_FILEPATH = 'portfolio_simulator/assets.txt'
-INITIAL_CASH = 100000.0
+INITIAL_CASH = 5000.0
 LOOKBACK_WINDOW = 60
 MAX_TEST_DAYS = (datetime.strptime(TEST_END_DATE, '%Y-%m-%d') - datetime.strptime(TEST_START_DATE, '%Y-%m-%d')).days
 

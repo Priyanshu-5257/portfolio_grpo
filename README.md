@@ -31,7 +31,7 @@ The important aspect is to use of **Group Relative Policy Optimization (GRPO)**.
 The simulation environment is the backbone of the training process, designed to replicate real-world market dynamics.
 
 *   **Data Source**: Historical daily price data is downloaded automatically using the `yfinance` library. The environment exclusively uses the **`Adj Close`** (Adjusted Close) price for all calculations. This is crucial as it accounts for corporate actions like stock splits and dividend distributions, providing a more accurate representation of total return.
-*   **Asset Universe**: The agent is trained and tested on a universe of **30 diverse US equities**. The list is defined in `portfolio_simulator/assets.txt` and includes a mix of technology, consumer discretionary, industrial, and financial stocks (e.g., AAPL, MSFT, AMZN, JPM, CAT).
+*   **Asset Universe**: The agent is trained and tested on a universe of **13 diverse Indian equities**. The list is defined in `portfolio_simulator/assets.txt` and includes a mix of technology, financial services, consumer goods, automotive, pharmaceuticals, and metals stocks.
 *   **State Representation**: At each step, the agent receives a comprehensive view of the market and its portfolio, including:
     *   Normalized cash balance.
     *   Normalized value of current holdings for each asset.

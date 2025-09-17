@@ -20,8 +20,8 @@ def train():
     # --- Environment Configuration ---
     assets_filepath = 'portfolio_simulator/assets.txt'
     start_date = '2004-01-01'
-    end_date = '2020-01-01'
-    initial_cash = 100000.0
+    end_date = '2022-01-01'
+    initial_cash = 5000.0
     group_size = 16 
     env = SingleStateGRPOEnv(group_size, assets_filepath, start_date, end_date, initial_cash)
 
